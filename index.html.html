@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html class="dark" lang="id">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {
+        "surface-container-lowest": "#0e0e0f",
+        "surface-dim": "#131314",
+        "secondary": "#dcb8ff",
+        "primary": "#ffffff",
+        "surface-variant": "#353436",
+        "primary-container": "#baf600",
+        "on-primary": "#263500",
+        "on-surface": "#e5e2e3",
+        "secondary-container": "#7701d0",
+        "on-secondary": "#480081",
+        "surface-container-highest": "#353436",
+        "error": "#ffb4ab",
+        "on-background": "#e5e2e3",
+        "outline": "#8d9479",
+        "background": "#131314",
+        "surface-container-high": "#2a2a2b",
+        "surface-container": "#201f20",
+        "on-secondary-container": "#dcb7ff",
+        "on-primary-container": "#516e00",
+        "outline-variant": "#434933",
+        "on-surface-variant": "#c3caac",
+        "primary-fixed": "#baf600",
+        "surface-container-low": "#1c1b1c",
+        "tertiary-container": "#7df4ff",
+        "surface-bright": "#3a393a",
+        "inverse-surface": "#e5e2e3",
+        "error-container": "#93000a",
+        "on-error-container": "#ffdad6",
+        "primary-fixed-dim": "#a3d800",
+        "surface": "#131314"
+      },
+      borderRadius: { DEFAULT:"0.25rem", lg:"0.5rem", xl:"0.75rem", full:"9999px" },
+      fontFamily: {
+        "headline-md": ["Montserrat"],
+        "headline-lg": ["Montserrat"],
+        "headline-xl": ["Montserrat"],
+        "body-lg": ["Inter"],
+        "body-md": ["Inter"],
+        "label-sm": ["Inter"]
+      },
+      fontSize: {
+        "label-sm": ["12px",{"lineHeight":"1","letterSpacing":"0.05em","fontWeight":"600"}],
+        "headline-md": ["24px",{"lineHeight":"1.3","fontWeight":"600"}],
+        "headline-lg": ["32px",{"lineHeight":"1.2","fontWeight":"700"}],
+        "body-lg": ["18px",{"lineHeight":"1.6","fontWeight":"400"}],
+        "headline-xl": ["48px",{"lineHeight":"1.1","letterSpacing":"-0.02em","fontWeight":"800"}],
+        "body-md": ["16px",{"lineHeight":"1.5","fontWeight":"400"}]
+      }
+    }
+  }
+}
+</script>
+<title>R&T_Official — Task Dashboard</title>
+<style>
+body { background-color:#131314; color:#e5e2e3; overflow-x:hidden; font-family:'Inter',sans-serif; }
+.glass-card { background:rgba(26,26,46,0.6); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.1); }
+.neon-rim-lime { border:1px solid #baf600!important; box-shadow:0 0 15px rgba(186,246,0,0.3); }
+.neon-rim-violet { border:1px solid #7701d0!important; box-shadow:0 0 15px rgba(119,1,208,0.3); }
+.neon-text-lime { text-shadow:0 0 8px rgba(186,246,0,0.5); }
+.radial-progress {
+  background: radial-gradient(closest-side,#131314 85%,transparent 86% 100%),
+              conic-gradient(#baf600 calc(var(--progress)*1%),#7701d0 0);
+}
+.custom-scrollbar::-webkit-scrollbar{width:4px}
+.custom-scrollbar::-webkit-scrollbar-track{background:rgba(255,255,255,0.05)}
+.custom-scrollbar::-webkit-scrollbar-thumb{background:#baf600;border-radius:10px}
+input[type="checkbox"]{appearance:none;-webkit-appearance:none}
+input[type="checkbox"]:checked{background-color:#baf600;border-color:#baf600}
+.task-running { border:1px solid rgba(186,246,0,0.4)!important; box-shadow:0 0 10px rgba(186,246,0,0.1); }
+.task-done { opacity:0.5; }
+.live-timer { font-variant-numeric:tabular-nums; font-family:'Inter',monospace; }
+input[type="text"],input[type="password"],select,textarea {
+  background:rgba(53,52,54,0.4); border:1px solid rgba(255,255,255,0.1);
+  color:#e5e2e3; border-radius:0.5rem; padding:0.5rem 0.75rem;
+  font-size:14px; outline:none; font-family:'Inter',sans-serif; width:100%;
+  transition:border-color 0.2s;
+}
+input[type="text"]:focus,select:focus,textarea:focus { border-color:#baf600; }
+select option { background:#1c1b1c; }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-10 py-4 bg-[#131314]/60 backdrop-blur-xl border-b border-white/10">
+  <div class="flex items-center gap-8">
+    <h1 class="font-headline-md text-headline-md font-black tracking-tighter text-primary" style="font-family:Montserrat">PLANNING TASK</h1>
+    <div class="hidden md:flex items-center bg-[#353436]/30 px-4 py-2 rounded-xl border border-white/5">
+      <span class="material-symbols-outlined text-[#c3caac] mr-2">search</span>
+      <input style="background:transparent;border:none;width:200px;padding:0" placeholder="Search tasks..." type="text"/>
+    </div>
+  </div>
+  <div class="flex items-center gap-4">
+    <div id="live-clock" class="live-timer text-primary-fixed font-bold text-sm px-3 py-1 rounded-full border border-primary-fixed/30" style="background:rgba(186,246,0,0.08)">00:00:00</div>
+    <button class="p-2 rounded-full hover:bg-[#353436]/50 transition-colors text-[#baf600]"><span class="material-symbols-outlined">notifications</span></button>
+    <button class="p-2 rounded-full hover:bg-[#353436]/50 transition-colors text-[#baf600]"><span class="material-symbols-outlined">account_circle</span></button>
+  </div>
+</header>
+
+<!-- SIDEBAR -->
+<aside class="fixed left-0 top-0 h-full flex flex-col pt-24 pb-8 bg-[#0e0e0f]/80 backdrop-blur-2xl border-r border-white/5 w-64 shadow-2xl hidden md:flex z-40">
+  <div class="px-6 mb-8">
+    <div class="flex items-center gap-3 mb-6">
+      <div class="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center">
+        <span class="material-symbols-outlined text-on-primary">terminal</span>
+      </div>
+      <div>
+        <p class="font-label-sm text-label-sm text-primary font-black" style="font-family:Inter">System Operator</p>
+        <p class="text-[10px] text-primary-fixed opacity-70">Status: Optimal</p>
+      </div>
+    </div>
+    <button onclick="openAddModal()" class="w-full py-3 bg-primary-container text-on-primary font-bold rounded-lg shadow-lg flex items-center justify-center gap-2 hover:scale-[1.02] transition-transform" style="font-family:Montserrat;font-size:13px">
+      <span class="material-symbols-outlined text-[20px]">add</span> NEW TASK
+    </button>
+  </div>
+  <nav class="flex-1 flex flex-col">
+    <a class="bg-secondary-container/20 text-[#baf600] border-l-4 border-[#a3d800] px-6 py-4 flex items-center gap-4 transition-all hover:translate-x-1 duration-300" href="#">
+      <span class="material-symbols-outlined">home</span><span class="font-label-sm text-label-sm">Home</span>
+    </a>
+    <a class="text-[#c3caac] px-6 py-4 flex items-center gap-4 hover:text-white hover:bg-white/5 transition-all hover:translate-x-1 duration-300" href="#">
+      <span class="material-symbols-outlined">grid_view</span><span class="font-label-sm text-label-sm">Tasks</span>
+    </a>
+    <a class="text-[#c3caac] px-6 py-4 flex items-center gap-4 hover:text-white hover:bg-white/5 transition-all hover:translate-x-1 duration-300" href="#">
+      <span class="material-symbols-outlined">calendar_today</span><span class="font-label-sm text-label-sm">Calendar</span>
+    </a>
+    <a class="text-[#c3caac] px-6 py-4 flex items-center gap-4 hover:text-white hover:bg-white/5 transition-all hover:translate-x-1 duration-300" href="#">
+      <span class="material-symbols-outlined">analytics</span><span class="font-label-sm text-label-sm">Analytics</span>
+    </a>
+    <a class="mt-auto text-[#c3caac] px-6 py-4 flex items-center gap-4 hover:text-white hover:bg-white/5 transition-all hover:translate-x-1 duration-300" href="#">
+      <span class="material-symbols-outlined">settings</span><span class="font-label-sm text-label-sm">Settings</span>
+    </a>
+  </nav>
+</aside>
+
+<!-- MAIN -->
+<main class="md:ml-64 pt-24 min-h-screen px-4 md:px-10 pb-24">
+  <div class="max-w-7xl mx-auto">
+
+    <!-- Header -->
+    <div class="mb-8">
+      <h2 class="font-headline-lg text-headline-lg text-primary mb-1" style="font-family:Montserrat">Systems Overview</h2>
+      <p class="text-[#c3caac]" id="header-date">Welcome back, Operator. Your neural-link is stable.</p>
+    </div>
+
+    <!-- STAT CARDS -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div class="glass-card p-6 rounded-xl relative overflow-hidden group">
+        <div class="absolute top-0 left-0 w-1 h-full bg-[#baf600]"></div>
+        <p class="font-label-sm text-label-sm text-[#c3caac] uppercase tracking-widest mb-2">Total Tasks</p>
+        <h3 class="font-black text-5xl text-primary mb-1" style="font-family:Montserrat" id="stat-total">00</h3>
+        <div class="flex items-center text-[#baf600] gap-1"><span class="material-symbols-outlined text-[16px]">list_alt</span><span class="text-[12px] font-bold">hari ini</span></div>
+      </div>
+      <div class="glass-card p-6 rounded-xl relative overflow-hidden group neon-rim-lime">
+        <div class="absolute top-0 left-0 w-1 h-full bg-[#baf600]"></div>
+        <p class="font-label-sm text-label-sm text-[#c3caac] uppercase tracking-widest mb-2">Active Tasks</p>
+        <h3 class="font-black text-5xl text-[#baf600] neon-text-lime mb-1" style="font-family:Montserrat" id="stat-running">00</h3>
+        <div class="flex items-center text-[#c3caac] gap-1"><span class="material-symbols-outlined text-[16px]">bolt</span><span class="text-[12px]">sedang berjalan</span></div>
+      </div>
+      <div class="glass-card p-6 rounded-xl relative overflow-hidden group">
+        <div class="absolute top-0 left-0 w-1 h-full bg-[#dcb8ff]"></div>
+        <p class="font-label-sm text-label-sm text-[#c3caac] uppercase tracking-widest mb-2">Completed</p>
+        <h3 class="font-black text-5xl text-primary mb-1" style="font-family:Montserrat" id="stat-done">00</h3>
+        <div class="flex items-center text-[#dcb8ff] gap-1"><span class="material-symbols-outlined text-[16px]">check_circle</span><span class="text-[12px] font-bold" id="stat-pct">0% efisiensi</span></div>
+      </div>
+      <div class="glass-card p-6 rounded-xl relative overflow-hidden group">
+        <div class="absolute top-0 left-0 w-1 h-full bg-[#7df4ff]"></div>
+        <p class="font-label-sm text-label-sm text-[#c3caac] uppercase tracking-widest mb-2">Total Waktu</p>
+        <h3 class="font-black text-4xl text-primary mb-1" style="font-family:Montserrat" id="stat-time">0j 0m</h3>
+        <div class="flex items-center text-[#7df4ff] gap-1"><span class="material-symbols-outlined text-[16px]">timer</span><span class="text-[12px]">digunakan</span></div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-12 gap-6">
+
+      <!-- LEFT: TASK LIST -->
+      <div class="col-span-12 lg:col-span-8 flex flex-col gap-4">
+
+        <!-- ADD TASK FORM -->
+        <div class="glass-card p-5 rounded-xl">
+          <h3 class="font-semibold text-primary mb-4 flex items-center gap-2" style="font-family:Montserrat;font-size:16px">
+            <span class="material-symbols-outlined text-[#baf600]">add_circle</span> Tambah Tugas Baru
+          </h3>
+          <div class="flex flex-col gap-3">
+            <input type="text" id="task-name-input" placeholder="Nama tugas..." />
+            <div class="flex gap-3">
+              <select id="task-cat" style="flex:1">
+                <option value="kerja">Kerja</option>
+                <option value="belajar">Belajar</option>
+                <option value="pribadi">Pribadi</option>
+                <option value="kesehatan">Kesehatan</option>
+                <option value="lainnya">Lainnya</option>
+              </select>
+              <select id="task-priority" style="flex:1">
+                <option value="tinggi">High Priority</option>
+                <option value="sedang">Medium Priority</option>
+                <option value="rendah">Low Priority</option>
+              </select>
+              <button onclick="addTask()" class="px-5 py-2 bg-primary-container text-on-primary font-bold rounded-lg hover:scale-[1.02] transition-transform flex items-center gap-2 whitespace-nowrap" style="font-family:Montserrat;font-size:13px">
+                <span class="material-symbols-outlined text-[18px]">add</span> ADD
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- FILTER BAR -->
+        <div class="flex justify-between items-center">
+          <h3 class="font-semibold text-primary" style="font-family:Montserrat;font-size:20px">Tasks for Today</h3>
+          <div class="flex gap-2">
+            <button onclick="filterTasks('semua')" id="f-semua" class="px-3 py-1 rounded-full text-[12px] font-bold transition-colors bg-[#353436]/50 text-[#baf600]" style="font-family:Inter">Semua</button>
+            <button onclick="filterTasks('berjalan')" id="f-berjalan" class="px-3 py-1 rounded-full text-[12px] font-bold transition-colors bg-[#353436]/30 text-[#c3caac]" style="font-family:Inter">Active</button>
+            <button onclick="filterTasks('selesai')" id="f-selesai" class="px-3 py-1 rounded-full text-[12px] font-bold transition-colors bg-[#353436]/30 text-[#c3caac]" style="font-family:Inter">Selesai</button>
+          </div>
+        </div>
+
+        <!-- TASK LIST -->
+        <div id="task-list" class="flex flex-col gap-3 custom-scrollbar">
+          <div class="glass-card p-8 rounded-xl text-center text-[#c3caac] text-sm" id="empty-state">
+            <span class="material-symbols-outlined text-4xl text-[#353436] block mb-2">task_alt</span>
+            Belum ada tugas. Tambahkan tugas pertamamu di atas.
+          </div>
+        </div>
+
+        <!-- NEXT DAY PLAN -->
+        <div class="glass-card p-5 rounded-xl mt-2">
+          <h3 class="font-semibold text-primary mb-4 flex items-center gap-2" style="font-family:Montserrat;font-size:16px">
+            <span class="material-symbols-outlined text-[#dcb8ff]">event_upcoming</span> Rencana Hari Berikutnya
+          </h3>
+          <div id="plan-list" class="flex flex-col gap-2 mb-3"></div>
+          <div class="flex gap-2">
+            <input type="text" id="plan-input" placeholder="Tambah rencana besok..." onkeydown="if(event.key==='Enter')addPlan()"/>
+            <button onclick="addPlan()" class="px-4 py-2 bg-secondary-container text-[#dcb8ff] font-bold rounded-lg whitespace-nowrap hover:opacity-80 transition-opacity" style="font-family:Montserrat;font-size:12px">+ ADD</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN -->
+      <div class="col-span-12 lg:col-span-4 flex flex-col gap-6">
+
+        <!-- SCORE RADIAL -->
+        <div class="glass-card p-8 rounded-2xl flex flex-col items-center relative overflow-hidden">
+          <div class="absolute top-2 left-3 font-label-sm text-label-sm text-[#c3caac] opacity-40">TECH-ID: PULSE-7</div>
+          <h3 class="font-semibold text-primary mb-6 mt-2" style="font-family:Montserrat;font-size:18px">Daily Completion</h3>
+          <div class="relative w-44 h-44 flex items-center justify-center mb-5">
+            <div class="radial-progress w-full h-full rounded-full" id="radial-el" style="--progress:0"></div>
+            <div class="absolute inset-0 flex flex-col items-center justify-center">
+              <span class="font-black text-5xl text-primary" style="font-family:Montserrat"><span id="score-pct">0</span><span class="text-2xl">%</span></span>
+              <span class="text-[#c3caac] text-xs uppercase font-bold mt-1">Score</span>
+            </div>
+          </div>
+
+          <!-- SCORE BREAKDOWN -->
+          <div class="w-full flex flex-col gap-2 mb-4">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-[11px] text-[#c3caac]">Penyelesaian</span>
+              <div class="flex-1 mx-2 h-1 rounded-full bg-white/10 overflow-hidden"><div id="sb-c" class="h-full rounded-full bg-[#baf600] transition-all duration-700" style="width:0%"></div></div>
+              <span id="sp-c" class="text-[11px] font-bold text-primary min-w-[32px] text-right">0/40</span>
+            </div>
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-[11px] text-[#c3caac]">Prioritas tinggi</span>
+              <div class="flex-1 mx-2 h-1 rounded-full bg-white/10 overflow-hidden"><div id="sb-p" class="h-full rounded-full bg-[#7701d0] transition-all duration-700" style="width:0%"></div></div>
+              <span id="sp-p" class="text-[11px] font-bold text-primary min-w-[32px] text-right">0/30</span>
+            </div>
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-[11px] text-[#c3caac]">Kecepatan</span>
+              <div class="flex-1 mx-2 h-1 rounded-full bg-white/10 overflow-hidden"><div id="sb-s" class="h-full rounded-full bg-[#7df4ff] transition-all duration-700" style="width:0%"></div></div>
+              <span id="sp-s" class="text-[11px] font-bold text-primary min-w-[32px] text-right">0/10</span>
+            </div>
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-[11px] text-[#c3caac]">Penilaian mandiri</span>
+              <div class="flex-1 mx-2 h-1 rounded-full bg-white/10 overflow-hidden"><div id="sb-r" class="h-full rounded-full bg-[#dcb8ff] transition-all duration-700" style="width:0%"></div></div>
+              <span id="sp-r" class="text-[11px] font-bold text-primary min-w-[32px] text-right">0/20</span>
+            </div>
+          </div>
+
+          <!-- STARS -->
+          <div class="flex gap-1 mb-2" id="star-rating">
+            <button onclick="setSelfRating(1)" data-v="1" class="text-2xl transition-transform hover:scale-125 bg-transparent border-none cursor-pointer">☆</button>
+            <button onclick="setSelfRating(2)" data-v="2" class="text-2xl transition-transform hover:scale-125 bg-transparent border-none cursor-pointer">☆</button>
+            <button onclick="setSelfRating(3)" data-v="3" class="text-2xl transition-transform hover:scale-125 bg-transparent border-none cursor-pointer">☆</button>
+            <button onclick="setSelfRating(4)" data-v="4" class="text-2xl transition-transform hover:scale-125 bg-transparent border-none cursor-pointer">☆</button>
+            <button onclick="setSelfRating(5)" data-v="5" class="text-2xl transition-transform hover:scale-125 bg-transparent border-none cursor-pointer">☆</button>
+          </div>
+          <p class="text-[10px] text-[#c3caac] mb-3">Nilai dirimu hari ini</p>
+          <div id="grade-badge" class="hidden px-4 py-1 rounded-full text-xs font-bold" style="font-family:Montserrat"></div>
+        </div>
+
+        <!-- TIMELINE -->
+        <div class="glass-card p-5 rounded-2xl">
+          <h3 class="font-semibold text-primary mb-4 flex items-center gap-2" style="font-family:Montserrat;font-size:16px">
+            <span class="material-symbols-outlined text-[#baf600]">timeline</span> Activity Log
+          </h3>
+          <div id="timeline" class="flex flex-col gap-0 custom-scrollbar max-h-72 overflow-y-auto">
+            <p class="text-[12px] text-[#353436] text-center py-6">Aktivitas akan muncul di sini</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- FAB -->
+<button onclick="openAddModal()" class="fixed bottom-8 right-8 w-16 h-16 bg-primary-container text-on-primary rounded-full shadow-[0_0_25px_rgba(186,246,0,0.4)] flex items-center justify-center hover:scale-110 active:scale-95 transition-all group z-[100]">
+  <span class="material-symbols-outlined text-[32px] group-hover:rotate-90 transition-transform">add</span>
+</button>
+
+<!-- MOBILE NAV -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full bg-[#131314]/90 backdrop-blur-xl border-t border-white/5 flex justify-around items-center py-3 z-[90]">
+  <a class="text-[#baf600] flex flex-col items-center gap-1" href="#"><span class="material-symbols-outlined">home</span><span class="text-[10px]">Home</span></a>
+  <a class="text-[#c3caac] flex flex-col items-center gap-1" href="#"><span class="material-symbols-outlined">grid_view</span><span class="text-[10px]">Tasks</span></a>
+  <a class="text-[#c3caac] flex flex-col items-center gap-1" href="#"><span class="material-symbols-outlined">calendar_today</span><span class="text-[10px]">Plan</span></a>
+  <a class="text-[#c3caac] flex flex-col items-center gap-1" href="#"><span class="material-symbols-outlined">account_circle</span><span class="text-[10px]">Profile</span></a>
+</nav>
+
+<!-- TOAST -->
+<div id="toast" class="fixed bottom-24 right-8 glass-card px-4 py-3 rounded-xl text-sm font-semibold text-primary z-[200] transition-all duration-300 opacity-0 translate-y-4 pointer-events-none flex items-center gap-2">
+  <span class="material-symbols-outlined text-[#baf600] text-[18px]">check_circle</span>
+  <span id="toast-msg"></span>
+</div>
+
+<script>
+// ── STATE ──
+let tasks = JSON.parse(localStorage.getItem('nxr-tasks') || '[]');
+let plans = JSON.parse(localStorage.getItem('nxr-plans') || '[]');
+let selfRating = parseInt(localStorage.getItem('nxr-rating') || '0');
+let filter = 'semua';
+let liveTimers = {};
+
+// ── CLOCK ──
+function updateClock() {
+  const now = new Date();
+  document.getElementById('live-clock').textContent = now.toLocaleTimeString('id-ID',{hour12:false});
+  document.getElementById('header-date').textContent =
+    now.toLocaleDateString('id-ID',{weekday:'long',year:'numeric',month:'long',day:'numeric'}) + ' — Neural-link: Stable';
+}
+updateClock(); setInterval(updateClock, 1000);
+
+// ── HELPERS ──
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2); }
+function fmtTime(ts){ if(!ts)return'–'; return new Date(ts).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}); }
+function fmtDur(ms){
+  if(!ms||ms<0)return'0d';
+  const s=Math.floor(ms/1000),h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sc=s%60;
+  if(h>0)return h+'j '+m+'m'; if(m>0)return m+'m '+sc+'d'; return sc+'d';
+}
+function fmtDurLive(ms){
+  if(!ms||ms<0)return'00:00:00';
+  const s=Math.floor(ms/1000);
+  return[Math.floor(s/3600),Math.floor((s%3600)/60),s%60].map(v=>String(v).padStart(2,'0')).join(':');
+}
+function save(){
+  localStorage.setItem('nxr-tasks',JSON.stringify(tasks));
+  localStorage.setItem('nxr-plans',JSON.stringify(plans));
+  localStorage.setItem('nxr-rating',selfRating);
+}
+function showToast(msg){
+  const t=document.getElementById('toast');
+  document.getElementById('toast-msg').textContent=msg;
+  t.classList.remove('opacity-0','translate-y-4');
+  t.classList.add('opacity-100','translate-y-0');
+  setTimeout(()=>{t.classList.add('opacity-0','translate-y-4');t.classList.remove('opacity-100','translate-y-0');},2200);
+}
+function openAddModal(){ document.getElementById('task-name-input').focus(); window.scrollTo({top:0,behavior:'smooth'}); }
+
+// ── TASKS ──
+function addTask(){
+  const name=document.getElementById('task-name-input').value.trim();
+  if(!name){showToast('Nama tugas tidak boleh kosong');return;}
+  tasks.unshift({id:uid(),name,cat:document.getElementById('task-cat').value,priority:document.getElementById('task-priority').value,status:'todo',startTs:null,endTs:null,totalMs:0,createdAt:Date.now()});
+  document.getElementById('task-name-input').value='';
+  save(); renderAll(); showToast('Task added: '+name);
+}
+
+function startTask(id){
+  tasks.forEach(t=>{ if(t.status==='running') stopTask(t.id,true); });
+  const t=tasks.find(t=>t.id===id); if(!t)return;
+  t.status='running'; t.startTs=Date.now();
+  save(); renderAll(); showToast('Started: '+t.name);
+}
+
+function stopTask(id,silent){
+  const t=tasks.find(t=>t.id===id); if(!t||t.status!=='running')return;
+  t.endTs=Date.now(); t.totalMs+=(t.endTs-t.startTs); t.status='done';
+  if(liveTimers[id]){clearInterval(liveTimers[id]);delete liveTimers[id];}
+  save(); renderAll();
+  if(!silent)showToast('Done! '+fmtDur(t.totalMs));
+}
+
+function deleteTask(id){
+  if(liveTimers[id]){clearInterval(liveTimers[id]);delete liveTimers[id];}
+  tasks=tasks.filter(t=>t.id!==id);
+  save(); renderAll();
+}
+
+function filterTasks(f){
+  filter=f;
+  ['semua','berjalan','selesai'].forEach(k=>{
+    const btn=document.getElementById('f-'+k);
+    btn.className='px-3 py-1 rounded-full text-[12px] font-bold transition-colors '+(k===f?'bg-[#353436]/50 text-[#baf600]':'bg-[#353436]/30 text-[#c3caac]');
+  });
+  renderTaskList();
+}
+
+// ── RENDER ──
+function renderAll(){ renderTaskList(); renderTimeline(); renderStats(); renderScore(); }
+
+const priMap={tinggi:{label:'High Priority',cls:'bg-red-500/10 text-red-400 border border-red-500/20'},sedang:{label:'Medium Priority',cls:'bg-[#baf600]/10 text-[#baf600] border border-[#baf600]/20'},rendah:{label:'Low Priority',cls:'bg-[#353436] text-[#c3caac]'}};
+const catMap={kerja:'Kerja',belajar:'Belajar',pribadi:'Pribadi',kesehatan:'Kesehatan',lainnya:'Lainnya'};
+
+function renderTaskList(){
+  const el=document.getElementById('task-list');
+  let filtered=tasks;
+  if(filter==='berjalan')filtered=tasks.filter(t=>t.status==='running');
+  if(filter==='selesai')filtered=tasks.filter(t=>t.status==='done');
+
+  document.getElementById('empty-state').style.display=filtered.length?'none':'block';
+
+  // clear old timers
+  Object.values(liveTimers).forEach(clearInterval); liveTimers={};
+
+  const items=filtered.map(t=>{
+    const pri=priMap[t.priority]||priMap.sedang;
+    const tsHtml=t.startTs?`<span class="text-[11px] text-[#c3caac]/60 font-mono">▶ ${fmtTime(t.startTs)}`+(t.endTs?` ■ ${fmtTime(t.endTs)}`:'')+'</span>':'';
+    const durHtml=t.status==='done'?`<span class="text-[11px] text-[#baf600] font-bold">${fmtDur(t.totalMs)}</span>`:t.status==='running'?`<span class="text-[11px] text-[#7df4ff] font-bold live-timer" id="live-${t.id}">00:00:00</span>`:'';
+    let actions='';
+    if(t.status==='todo') actions=`<button onclick="startTask('${t.id}')" class="px-3 py-1 bg-primary-container text-on-primary text-[11px] font-black rounded-lg hover:scale-105 transition-transform" style="font-family:Montserrat">START</button><button onclick="deleteTask('${t.id}')" class="p-1 text-[#c3caac]/40 hover:text-red-400 transition-colors"><span class="material-symbols-outlined text-[18px]">delete</span></button>`;
+    if(t.status==='running') actions=`<button onclick="stopTask('${t.id}')" class="px-3 py-1 bg-red-500/10 text-red-400 border border-red-500/20 text-[11px] font-black rounded-lg hover:scale-105 transition-transform" style="font-family:Montserrat">STOP</button>`;
+    if(t.status==='done') actions=`<button onclick="deleteTask('${t.id}')" class="p-1 text-[#c3caac]/40 hover:text-red-400 transition-colors"><span class="material-symbols-outlined text-[18px]">delete</span></button>`;
+    const cardCls=t.status==='running'?'task-running':t.status==='done'?'task-done':'';
+    return `<div class="glass-card p-4 rounded-xl flex items-center justify-between group hover:neon-rim-violet transition-all duration-300 ${cardCls}">
+      <div class="flex items-center gap-4 flex-1 min-w-0">
+        <div class="relative w-6 h-6 flex-shrink-0">
+          <input type="checkbox" ${t.status==='done'?'checked':''} onchange="toggleDone('${t.id}',this)" class="w-6 h-6 rounded border-2 border-[#a3d800] checked:bg-[#baf600] checked:border-[#baf600] focus:ring-0 cursor-pointer transition-all"/>
+        </div>
+        <div class="min-w-0">
+          <h4 class="font-semibold text-primary text-[15px] ${t.status==='done'?'line-through':''}" style="font-family:Inter">${t.name}</h4>
+          <div class="flex items-center gap-3 mt-1 flex-wrap">
+            <span class="text-[10px] text-[#c3caac]/60">${catMap[t.cat]||t.cat}</span>
+            ${tsHtml} ${durHtml}
+          </div>
+        </div>
+      </div>
+      <div class="flex items-center gap-3 flex-shrink-0 ml-3">
+        <span class="px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter ${pri.cls}" style="font-family:Montserrat">${pri.label}</span>
+        ${actions}
+      </div>
+    </div>`;
+  }).join('');
+
+  // inject after empty state
+  const existingItems=el.querySelectorAll('.task-card-item');
+  existingItems.forEach(e=>e.remove());
+  const wrapper=document.createElement('div');
+  wrapper.innerHTML=items; wrapper.querySelectorAll(':scope>div').forEach(d=>{d.classList.add('task-card-item');el.appendChild(d);});
+
+  // start live timers
+  tasks.filter(t=>t.status==='running').forEach(t=>{
+    liveTimers[t.id]=setInterval(()=>{
+      const el=document.getElementById('live-'+t.id);
+      if(el)el.textContent=fmtDurLive(Date.now()-t.startTs+(t.totalMs||0));
+    },1000);
+  });
+}
+
+function toggleDone(id,cb){
+  const t=tasks.find(t=>t.id===id); if(!t)return;
+  if(cb.checked && t.status==='todo'){ startTask(id); setTimeout(()=>stopTask(id),100); }
+  else if(!cb.checked && t.status==='done'){ t.status='todo'; t.startTs=null; t.endTs=null; t.totalMs=0; save(); renderAll(); }
+}
+
+function renderTimeline(){
+  const el=document.getElementById('timeline');
+  const sorted=[...tasks].filter(t=>t.startTs).sort((a,b)=>a.startTs-b.startTs);
+  if(!sorted.length){ el.innerHTML='<p class="text-[12px] text-[#353436] text-center py-6">Belum ada aktivitas</p>'; return; }
+  el.innerHTML=sorted.map((t,i)=>{
+    const dotColor=t.status==='done'?'#baf600':t.status==='running'?'#7df4ff':'#353436';
+    const glow=t.status==='running'?'box-shadow:0 0 8px rgba(125,244,255,0.6)':'';
+    return `<div class="flex gap-3 relative ${i<sorted.length-1?'pb-4':''}">
+      ${i<sorted.length-1?`<div class="absolute left-[9px] top-5 bottom-0 w-px bg-white/10"></div>`:''}
+      <div class="w-5 h-5 rounded-full border-2 flex-shrink-0 mt-0.5" style="border-color:${dotColor};background:${t.status==='done'?dotColor:'transparent'};${glow}"></div>
+      <div class="flex-1 min-w-0">
+        <p class="text-[13px] font-semibold text-primary truncate">${t.name}</p>
+        <p class="text-[10px] text-[#c3caac]/60 mt-0.5 font-mono">▶ ${fmtTime(t.startTs)}${t.endTs?' ■ '+fmtTime(t.endTs):t.status==='running'?' · running…':''}</p>
+        ${t.status==='done'?`<p class="text-[10px] text-[#baf600] font-bold">${fmtDur(t.totalMs)}</p>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderStats(){
+  const total=tasks.length, done=tasks.filter(t=>t.status==='done').length, running=tasks.filter(t=>t.status==='running').length;
+  const totalMs=tasks.reduce((s,t)=>s+t.totalMs,0);
+  const h=Math.floor(totalMs/3600000), m=Math.floor((totalMs%3600000)/60000);
+  document.getElementById('stat-total').textContent=String(total).padStart(2,'0');
+  document.getElementById('stat-done').textContent=String(done).padStart(2,'0');
+  document.getElementById('stat-running').textContent=String(running).padStart(2,'0');
+  document.getElementById('stat-time').textContent=h+'j '+m+'m';
+  document.getElementById('stat-pct').textContent=(total>0?Math.round(done/total*100):0)+'% efisiensi';
+}
+
+function renderScore(){
+  const total=tasks.length, done=tasks.filter(t=>t.status==='done').length;
+  const highDone=tasks.filter(t=>t.status==='done'&&t.priority==='tinggi').length;
+  const highTotal=tasks.filter(t=>t.priority==='tinggi').length;
+  const cScore=Math.round((total>0?done/total:0)*40);
+  const pScore=Math.round((highTotal>0?highDone/highTotal:(total>0?done/total:0))*30);
+  const finished=tasks.filter(t=>t.status==='done'&&t.totalMs>0);
+  let sScore=0;
+  if(finished.length){const avg=finished.reduce((s,t)=>s+t.totalMs,0)/finished.length/60000;sScore=avg<=30?10:avg<=60?7:avg<=120?4:2;}
+  const rScore=Math.round(selfRating/5*20);
+  const total100=cScore+pScore+sScore+rScore;
+
+  document.getElementById('score-pct').textContent=total100;
+  document.getElementById('sp-c').textContent=cScore+'/40';
+  document.getElementById('sp-p').textContent=pScore+'/30';
+  document.getElementById('sp-s').textContent=sScore+'/10';
+  document.getElementById('sp-r').textContent=rScore+'/20';
+  document.getElementById('sb-c').style.width=(cScore/40*100)+'%';
+  document.getElementById('sb-p').style.width=(pScore/30*100)+'%';
+  document.getElementById('sb-s').style.width=(sScore/10*100)+'%';
+  document.getElementById('sb-r').style.width=(rScore/20*100)+'%';
+
+  let p=0; const target=total100;
+  const radial=document.getElementById('radial-el');
+  const iv=setInterval(()=>{ if(p>=target){clearInterval(iv);return;} p++; radial.style.setProperty('--progress',p); },12);
+
+  const badge=document.getElementById('grade-badge');
+  let grade,bg,color;
+  if(total100>=90){grade='LUAR BIASA';bg='rgba(186,246,0,0.15)';color='#baf600';}
+  else if(total100>=75){grade='SANGAT BAIK';bg='rgba(125,244,255,0.12)';color='#7df4ff';}
+  else if(total100>=55){grade='CUKUP BAIK';bg='rgba(220,184,255,0.12)';color='#dcb8ff';}
+  else if(total100>=30){grade='PERLU DITINGKATKAN';bg='rgba(248,113,113,0.12)';color='#f87171';}
+  else{grade='AYO SEMANGAT';bg='rgba(255,255,255,0.05)';color='#c3caac';}
+  badge.style.background=bg; badge.style.color=color;
+  badge.textContent=grade+' — '+total100+'/100';
+  badge.classList.remove('hidden');
+}
+
+function setSelfRating(v){
+  selfRating=v;
+  document.querySelectorAll('#star-rating button').forEach(btn=>{
+    const val=parseInt(btn.dataset.v);
+    btn.textContent=val<=v?'★':'☆';
+    btn.style.color=val<=v?'#fbbf24':'#353436';
+  });
+  save(); renderScore(); showToast('Rating: '+v+'/5 bintang');
+}
+
+// ── PLANS ──
+function addPlan(){
+  const val=document.getElementById('plan-input').value.trim(); if(!val)return;
+  plans.push({id:uid(),text:val});
+  document.getElementById('plan-input').value='';
+  save(); renderPlans(); showToast('Rencana ditambahkan!');
+}
+function deletePlan(id){ plans=plans.filter(p=>p.id!==id); save(); renderPlans(); }
+function movePlanToToday(id){
+  const p=plans.find(p=>p.id===id); if(!p)return;
+  tasks.unshift({id:uid(),name:p.text,cat:'lainnya',priority:'sedang',status:'todo',startTs:null,endTs:null,totalMs:0,createdAt:Date.now()});
+  plans=plans.filter(p=>p.id!==id);
+  save(); renderAll(); renderPlans(); showToast('Dipindahkan ke tugas hari ini!');
+}
+function renderPlans(){
+  const el=document.getElementById('plan-list');
+  if(!plans.length){ el.innerHTML='<p class="text-[12px] text-[#353436] py-2">Belum ada rencana untuk besok.</p>'; return; }
+  el.innerHTML=plans.map(p=>`
+    <div class="flex items-center gap-3 bg-[#353436]/20 border border-white/5 rounded-lg px-3 py-2">
+      <div class="w-2 h-2 rounded-full bg-[#7701d0] flex-shrink-0"></div>
+      <span class="flex-1 text-[13px] text-[#c3caac]">${p.text}</span>
+      <button onclick="movePlanToToday('${p.id}')" class="text-[10px] font-black px-2 py-1 rounded bg-[#baf600]/10 text-[#baf600] hover:bg-[#baf600]/20 transition-colors" style="font-family:Montserrat">→ HARI INI</button>
+      <button onclick="deletePlan('${p.id}')" class="text-[#c3caac]/30 hover:text-red-400 transition-colors"><span class="material-symbols-outlined text-[16px]">close</span></button>
+    </div>`).join('');
+}
+
+// ── INIT ──
+document.getElementById('task-name-input').addEventListener('keydown',e=>{if(e.key==='Enter')addTask();});
+renderPlans(); renderAll();
+if(selfRating>0)setSelfRating(selfRating);
+</script>
+</body>
+</html>
